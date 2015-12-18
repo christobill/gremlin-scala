@@ -189,6 +189,23 @@ class TraversalSpec extends WordSpec with Matchers {
     }
   }
 
+  "orderBy" should {
+    "work" in new Fixture {
+        graph.V.has(Age)
+        .orderBy(_.value[Integer]("age"))
+      // TODO: Order.decr
+      // TODO: manual ordering a la `_ < _` ?
+      // TODO: make work for Int?
+        // .value[Integer]("age").order().by(_ < _)  //works
+        // .order().by("age", Order.incr)
+        // .orderBy(_.value[Integer]("age"), Order.incr)
+        // .orderBy(_.value[Integer]("age"), Order.incr)
+        // .orderBy(_.value2(Age))
+        .value(Age)
+        .toList shouldBe Seq(27, 29, 32, 35)
+    }
+  }
+
   "limit in nested traversals" in {
     val graph = TinkerGraph.open.asScala
     val person = "person"

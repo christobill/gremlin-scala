@@ -160,6 +160,12 @@ case class GremlinScala[End, Labels <: HList](traversal: GraphTraversal[_, End])
 
   def order(scope: Scope) = GremlinScala[End, Labels](traversal.order(scope))
 
+  // TODO: how to easily allow to override the ordering? possible problem: other implicit...
+  def orderBy[A <: AnyRef: Ordering](by: End ⇒ A)(implicit ev: End <:< Element): GremlinScala[End, Labels] =
+  // def orderBy[A <: AnyRef](by: End ⇒ A, ordering: Ordering[A])(implicit ev: End <:< Element): GremlinScala[End, Labels] =
+  // def orderBy[A <: AnyRef](by: End ⇒ A)(implicit ev: End <:< Element, ordering: Ordering[A]) =
+    order().by(by, implicitly[Ordering[A]])
+
   def simplePath() = GremlinScala[End, Labels](traversal.simplePath())
 
   def cyclicPath() = GremlinScala[End, Labels](traversal.cyclicPath())
@@ -252,6 +258,12 @@ case class GremlinScala[End, Labels <: HList](traversal: GraphTraversal[_, End])
   def by() = GremlinScala[End, Labels](traversal.by())
 
   def by[A <: AnyRef](funProjection: End ⇒ A) = GremlinScala[End, Labels](traversal.by(funProjection))
+
+  def by[A <: AnyRef](funProjection: End ⇒ A, comparator: Comparator[A] = Order.incr)(implicit ev: End <:< Element): GremlinScala[End, Labels] =
+    GremlinScala[End, Labels](
+      // TODO: ask on mailing list: why does `by` take a function Element => A for this specific by step?
+      traversal.by(toJavaFunction(funProjection).asInstanceOf[java.util.function.Function[Element, A]], comparator)
+    )
 
   def by(tokenProjection: T) = GremlinScala[End, Labels](traversal.by(tokenProjection))
 
